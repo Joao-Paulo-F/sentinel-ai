@@ -5,12 +5,19 @@ import streamlit as st
 def render_access_table(acessos):
 
     if not acessos:
-        st.info("Nenhum acesso registrado ainda.")
+
+        st.info(
+            "Nenhum acesso registrado."
+        )
+
         return
+
 
     dados = []
 
+
     for acesso in acessos:
+
         dados.append(
             {
                 "ID": acesso.get("id_acesso"),
@@ -25,10 +32,26 @@ def render_access_table(acessos):
             }
         )
 
+
     df = pd.DataFrame(dados)
+
 
     st.dataframe(
         df,
         use_container_width=True,
         hide_index=True,
+        column_config={
+            "Pontuação": st.column_config.NumberColumn(
+                "Pontuação",
+                format="%d/100",
+            ),
+
+            "Risco": st.column_config.TextColumn(
+                "Risco"
+            ),
+
+            "Resultado": st.column_config.TextColumn(
+                "Resultado"
+            ),
+        },
     )

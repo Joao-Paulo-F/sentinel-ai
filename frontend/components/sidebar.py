@@ -3,9 +3,13 @@ import streamlit as st
 
 def render_sidebar():
 
-    st.sidebar.title("🛡️ SentinelAI")
+    st.sidebar.markdown(
+        "# 🛡️ SentinelAI"
+    )
 
-    st.sidebar.caption("Security Intelligence")
+    st.sidebar.caption(
+        "SECURITY INTELLIGENCE"
+    )
 
     st.sidebar.divider()
 
@@ -20,8 +24,12 @@ def render_sidebar():
 
     st.sidebar.divider()
 
-    st.sidebar.success("● Sistema online")
+    st.sidebar.success(
+        "● Sistema online"
+    )
 
-    st.sidebar.caption("SentinelAI v1.0.0")
+    st.sidebar.caption(
+        "SentinelAI v1.0.0"
+    )
 
     return pagina

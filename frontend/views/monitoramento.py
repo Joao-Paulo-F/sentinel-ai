@@ -1,17 +1,31 @@
 import streamlit as st
 
+from frontend.components.cards import (
+    render_event_card,
+    render_page_header,
+    render_result_count,
+    render_section_title,
+    render_stat_card,
+)
 from frontend.components.tables import render_access_table
+
+
+FILTROS = {
+    "Todos": "Todos",
+    "BAIXO": "🟢 Baixo",
+    "MEDIO": "🟡 Médio",
+    "ALTO": "🔴 Alto",
+}
 
 
 def render_monitoramento(acessos):
 
-    st.title("Monitoramento")
-
-    st.caption(
-        "Detecção e acompanhamento dos eventos de segurança."
+    render_page_header(
+        "Monitoramento",
+        "Detecção e acompanhamento dos eventos de segurança.",
+        icone="activity",
+        etiqueta="Tempo real",
     )
-
-    st.divider()
 
     if not acessos:
         st.info("Nenhum evento de acesso registrado.")
@@ -43,27 +57,47 @@ def render_monitoramento(acessos):
 
     col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric("Eventos", total)
-    col2.metric("Risco baixo", baixo)
-    col3.metric("Risco médio", medio)
-    col4.metric("Risco alto", alto)
+    with col1:
+        render_stat_card(
+            "EVENTOS", total, "Eventos monitorados",
+            icone="activity", cor="#22D3EE",
+        )
 
-    st.divider()
+    with col2:
+        render_stat_card(
+            "RISCO BAIXO", baixo, "do total",
+            icone="shield-check", cor="#22C55E", total=total,
+        )
+
+    with col3:
+        render_stat_card(
+            "RISCO MÉDIO", medio, "do total",
+            icone="alert", cor="#F59E0B", total=total,
+        )
+
+    with col4:
+        render_stat_card(
+            "RISCO ALTO", alto, "do total",
+            icone="shield-x", cor="#EF4444", total=total,
+        )
 
     # ======================================================
     # FILTRO
     # ======================================================
 
-    st.subheader("Filtro de eventos")
+    render_section_title(
+        "Filtro de eventos",
+        "Selecione o nível de risco para focar a análise.",
+        icone="search",
+    )
 
-    filtro = st.selectbox(
+    filtro = st.radio(
         "Nível de risco",
-        [
-            "Todos",
-            "BAIXO",
-            "MEDIO",
-            "ALTO",
-        ],
+        list(FILTROS.keys()),
+        format_func=lambda chave: FILTROS[chave],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="filtro_monitoramento",
     )
 
     if filtro == "Todos":
@@ -75,210 +109,36 @@ def render_monitoramento(acessos):
             if acesso.get("nivel_risco") == filtro
         ]
 
-    st.caption(
-        f"{len(eventos_filtrados)} evento(s) encontrado(s)"
+    render_result_count(
+        len(eventos_filtrados),
+        total,
     )
-
-    st.divider()
 
     # ======================================================
     # EVENTOS
     # ======================================================
 
-    st.subheader("Eventos recentes")
+    render_section_title(
+        "Eventos recentes",
+        "Até 10 eventos mais recentes, com os motivos da detecção.",
+        icone="bell",
+    )
+
+    if not eventos_filtrados:
+        st.info("Nenhum evento encontrado para este filtro.")
 
     for acesso in eventos_filtrados[:10]:
 
-        risco = acesso.get(
-            "nivel_risco",
-            "DESCONHECIDO",
-        )
-
-        pontuacao = acesso.get(
-            "pontuacao",
-            0,
-        )
-
-        ip = acesso.get(
-            "ip_origem",
-            "N/A",
-        )
-
-        pais = acesso.get(
-            "pais",
-            "N/A",
-        )
-
-        cidade = acesso.get(
-            "cidade",
-            "N/A",
-        )
-
-        resultado = acesso.get(
-            "resultado",
-            "N/A",
-        )
-
-        data_hora = acesso.get(
-            "data_hora",
-            "N/A",
-        )
-
-        motivo = acesso.get(
-            "motivo",
-            "Nenhuma anomalia identificada.",
-        )
-
-        # -----------------------------------------------
-        # RISCO ALTO
-        # -----------------------------------------------
-
-        if risco == "ALTO":
-
-            with st.expander(
-                f"🔴 RISCO ALTO  •  {pontuacao}/100  •  {resultado}"
-            ):
-
-                st.error(
-                    "Acesso considerado de alto risco."
-                )
-
-                col1, col2 = st.columns(2)
-
-                with col1:
-
-                    st.write(
-                        f"**IP:** {ip}"
-                    )
-
-                    st.write(
-                        f"**País:** {pais}"
-                    )
-
-                    st.write(
-                        f"**Cidade:** {cidade}"
-                    )
-
-                with col2:
-
-                    st.write(
-                        f"**Data/Hora:** {data_hora}"
-                    )
-
-                    st.write(
-                        f"**Pontuação:** {pontuacao}/100"
-                    )
-
-                    st.write(
-                        f"**Ação:** {resultado}"
-                    )
-
-                st.markdown("**Motivos da detecção:**")
-
-                st.write(motivo)
-
-        # -----------------------------------------------
-        # RISCO MÉDIO
-        # -----------------------------------------------
-
-        elif risco == "MEDIO":
-
-            with st.expander(
-                f"🟡 RISCO MÉDIO  •  {pontuacao}/100  •  {resultado}"
-            ):
-
-                st.warning(
-                    "Acesso apresenta comportamento fora do padrão."
-                )
-
-                col1, col2 = st.columns(2)
-
-                with col1:
-
-                    st.write(
-                        f"**IP:** {ip}"
-                    )
-
-                    st.write(
-                        f"**País:** {pais}"
-                    )
-
-                    st.write(
-                        f"**Cidade:** {cidade}"
-                    )
-
-                with col2:
-
-                    st.write(
-                        f"**Data/Hora:** {data_hora}"
-                    )
-
-                    st.write(
-                        f"**Pontuação:** {pontuacao}/100"
-                    )
-
-                    st.write(
-                        f"**Ação:** {resultado}"
-                    )
-
-                st.markdown("**Motivos da detecção:**")
-
-                st.write(motivo)
-
-        # -----------------------------------------------
-        # RISCO BAIXO
-        # -----------------------------------------------
-
-        else:
-
-            with st.expander(
-                f"🟢 RISCO BAIXO  •  {pontuacao}/100  •  {resultado}"
-            ):
-
-                st.success(
-                    "Acesso dentro do comportamento esperado."
-                )
-
-                col1, col2 = st.columns(2)
-
-                with col1:
-
-                    st.write(
-                        f"**IP:** {ip}"
-                    )
-
-                    st.write(
-                        f"**País:** {pais}"
-                    )
-
-                    st.write(
-                        f"**Cidade:** {cidade}"
-                    )
-
-                with col2:
-
-                    st.write(
-                        f"**Data/Hora:** {data_hora}"
-                    )
-
-                    st.write(
-                        f"**Pontuação:** {pontuacao}/100"
-                    )
-
-                    st.write(
-                        f"**Ação:** {resultado}"
-                    )
-
-                st.markdown("**Análise:**")
-
-                st.write(motivo)
-
-    st.divider()
+        render_event_card(acesso)
 
     # ======================================================
     # TABELA
     # ======================================================
 
-    st.subheader("Tabela de eventos")
+    render_section_title(
+        "Tabela de eventos",
+        "Clique no cabeçalho de uma coluna para ordenar.",
+        icone="list",
+    )
 
     render_access_table(eventos_filtrados)

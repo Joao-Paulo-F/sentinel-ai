@@ -1,0 +1,13 @@
+# Tema visual do SentinelAI (lido automaticamente pelo Streamlit
+# quando executado a partir da raiz do projeto).
+
+[theme]
+base = "dark"
+primaryColor = "#22D3EE"
+backgroundColor = "#070B12"
+secondaryBackgroundColor = "#0F1722"
+textColor = "#E6EDF3"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"

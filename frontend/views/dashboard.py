@@ -1,7 +1,14 @@
 import streamlit as st
 
-from frontend.components.cards import render_stat_card
-from frontend.components.tables import render_access_table
+from frontend.components.cards import (
+    render_page_header,
+    render_risk_distribution,
+    render_rules_card,
+    render_section_title,
+    render_stat_card,
+    render_status_card,
+)
+from frontend.components.tables import render_access_list
 
 
 def render_dashboard(acessos):
@@ -10,13 +17,12 @@ def render_dashboard(acessos):
     # CABEÇALHO
     # ======================================================
 
-    st.title("🛡️ SentinelAI")
-
-    st.caption(
-        "Sistema de Defesa Preditiva e Análise Comportamental"
+    render_page_header(
+        "SentinelAI",
+        "Sistema de Defesa Preditiva e Análise Comportamental",
+        icone="shield-check",
+        etiqueta="Visão geral",
     )
-
-    st.divider()
 
 
     # ======================================================
@@ -53,6 +59,8 @@ def render_dashboard(acessos):
             "ACESSOS",
             total,
             "Total de acessos registrados",
+            icone="activity",
+            cor="#22D3EE",
         )
 
 
@@ -62,6 +70,9 @@ def render_dashboard(acessos):
             "ALERTAS",
             alertas,
             "Acessos que exigiram atenção",
+            icone="bell",
+            cor="#F59E0B",
+            total=total,
         )
 
 
@@ -71,6 +82,9 @@ def render_dashboard(acessos):
             "BLOQUEIOS",
             bloqueios,
             "Acessos bloqueados",
+            icone="lock",
+            cor="#EF4444",
+            total=total,
         )
 
 
@@ -80,17 +94,21 @@ def render_dashboard(acessos):
             "RISCO ALTO",
             risco_alto,
             "Eventos de risco elevado",
+            icone="flame",
+            cor="#F43F5E",
+            total=total,
         )
-
-
-    st.markdown("")
 
 
     # ======================================================
     # ANÁLISE DE RISCO
     # ======================================================
 
-    st.subheader("Análise de risco")
+    render_section_title(
+        "Análise de risco",
+        "Distribuição dos acessos por nível de risco e a ação executada.",
+        icone="activity",
+    )
 
 
     baixo = sum(
@@ -113,69 +131,67 @@ def render_dashboard(acessos):
 
 
     col_grafico, col_info = st.columns(
-        [2, 1]
+        [3, 2]
     )
 
 
     with col_grafico:
 
-        st.bar_chart(
-            {
-                "Baixo": baixo,
-                "Médio": medio,
-                "Alto": alto,
-            }
+        render_risk_distribution(
+            baixo,
+            medio,
+            alto,
         )
 
 
     with col_info:
 
-        st.info(
-            "O SentinelAI analisa características "
-            "do acesso e classifica o nível de risco."
-        )
-
-        st.write(
-            f"🟢 Baixo: **{baixo}**"
-        )
-
-        st.write(
-            f"🟡 Médio: **{medio}**"
-        )
-
-        st.write(
-            f"🔴 Alto: **{alto}**"
-        )
-
-
-    st.divider()
+        render_rules_card()
 
 
     # ======================================================
     # EVENTOS RECENTES
     # ======================================================
 
-    st.subheader("Últimos acessos")
+    render_section_title(
+        "Últimos acessos",
+        "Os 10 eventos mais recentes analisados pelo SentinelAI.",
+        icone="list",
+    )
+
+    render_access_list(
+        acessos[:10]
+    )
 
 
-    if acessos:
+    # ======================================================
+    # STATUS
+    # ======================================================
 
-        render_access_table(
-            acessos[:10]
-        )
-
-    else:
-
-        st.info(
-            "Nenhum acesso foi registrado ainda."
-        )
-
-    st.divider()
-
-    st.subheader("Status do SentinelAI")
+    render_section_title(
+        "Status do SentinelAI",
+        icone="server",
+    )
 
     col1, col2, col3 = st.columns(3)
 
-    col1.success("🟢 API operacional")
-    col2.success("🟢 Banco de dados operacional")
-    col3.success("🟢 Motor de análise operacional")
+    with col1:
+        render_status_card(
+            "API",
+            "FastAPI · REST",
+            "server",
+        )
+
+    with col2:
+        render_status_card(
+            "Banco de dados",
+            "SQLite",
+            "database",
+        )
+
+    with col3:
+        render_status_card(
+            "Motor de análise",
+            "Regras de risco",
+            "cpu",
+        )

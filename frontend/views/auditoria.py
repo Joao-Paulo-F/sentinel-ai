@@ -1,17 +1,22 @@
 import streamlit as st
 
+from frontend.components.cards import (
+    render_page_header,
+    render_result_count,
+    render_section_title,
+    render_stat_card,
+)
 from frontend.components.tables import render_access_table
 
 
 def render_auditoria(acessos):
 
-    st.title("Auditoria")
-
-    st.caption(
-        "Histórico e rastreabilidade das decisões de segurança."
+    render_page_header(
+        "Auditoria",
+        "Histórico e rastreabilidade das decisões de segurança.",
+        icone="list",
+        etiqueta="Histórico",
     )
-
-    st.divider()
 
     # ======================================================
     # MÉTRICAS
@@ -40,63 +45,82 @@ def render_auditoria(acessos):
 
     col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric(
-        "Total de eventos",
-        total,
-    )
+    with col1:
+        render_stat_card(
+            "TOTAL DE EVENTOS", total, "Decisões registradas",
+            icone="list", cor="#22D3EE",
+        )
 
-    col2.metric(
-        "Permitidos",
-        permitidos,
-    )
+    with col2:
+        render_stat_card(
+            "PERMITIDOS", permitidos, "dos acessos",
+            icone="check", cor="#22C55E", total=total,
+        )
 
-    col3.metric(
-        "Alertas",
-        alertados,
-    )
+    with col3:
+        render_stat_card(
+            "ALERTAS", alertados, "dos acessos",
+            icone="bell", cor="#F59E0B", total=total,
+        )
 
-    col4.metric(
-        "Bloqueados",
-        bloqueados,
-    )
-
-
-    st.divider()
+    with col4:
+        render_stat_card(
+            "BLOQUEADOS", bloqueados, "dos acessos",
+            icone="lock", cor="#EF4444", total=total,
+        )
 
 
     # ======================================================
     # FILTRO
     # ======================================================
 
-    st.subheader("Consulta de auditoria")
+    render_section_title(
+        "Consulta de auditoria",
+        "Combine os filtros para localizar registros específicos.",
+        icone="search",
+    )
 
-    col1, col2 = st.columns(2)
+    with st.container(border=True):
 
-
-    with col1:
-
-        filtro_risco = st.selectbox(
-            "Nível de risco",
-            [
-                "Todos",
-                "BAIXO",
-                "MEDIO",
-                "ALTO",
-            ],
-        )
+        col1, col2 = st.columns(2)
 
 
-    with col2:
+        with col1:
 
-        filtro_acao = st.selectbox(
-            "Ação de segurança",
-            [
-                "Todas",
-                "PERMITIR",
-                "ALERTAR",
-                "BLOQUEAR",
-            ],
-        )
+            filtro_risco = st.selectbox(
+                "Nível de risco",
+                [
+                    "Todos",
+                    "BAIXO",
+                    "MEDIO",
+                    "ALTO",
+                ],
+                format_func=lambda v: {
+                    "Todos": "Todos os níveis",
+                    "BAIXO": "🟢 Baixo",
+                    "MEDIO": "🟡 Médio",
+                    "ALTO": "🔴 Alto",
+                }[v],
+            )
+
+
+        with col2:
+
+            filtro_acao = st.selectbox(
+                "Ação de segurança",
+                [
+                    "Todas",
+                    "PERMITIR",
+                    "ALERTAR",
+                    "BLOQUEAR",
+                ],
+                format_func=lambda v: {
+                    "Todas": "Todas as ações",
+                    "PERMITIR": "✅ Permitir",
+                    "ALERTAR": "⚠️ Alertar",
+                    "BLOQUEAR": "⛔ Bloquear",
+                }[v],
+            )
 
 
     eventos = acessos
@@ -120,18 +144,20 @@ def render_auditoria(acessos):
         ]
 
 
-    st.caption(
-        f"{len(eventos)} evento(s) encontrado(s)"
+    render_result_count(
+        len(eventos),
+        total,
     )
-
-
-    st.divider()
 
 
     # ======================================================
     # REGISTROS
     # ======================================================
 
-    st.subheader("Registros")
+    render_section_title(
+        "Registros",
+        "Clique no cabeçalho de uma coluna para ordenar.",
+        icone="list",
+    )
 
     render_access_table(eventos)

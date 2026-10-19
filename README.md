@@ -1,10 +1,10 @@
 # 🛡️ SentinelAI
 
-### Sistema Inteligente de Detecção de Anomalias de Acesso
+### Sistema de Análise de Risco para Acessos
 
-O **SentinelAI** é um sistema de segurança desenvolvido para identificar comportamentos anômalos em acessos de usuários e tomar decisões preventivas com base em uma análise de risco.
+O **SentinelAI** é um MVP acadêmico de cibersegurança que analisa características de acessos, calcula uma pontuação de risco e registra a classificação e a decisão de segurança associada a cada evento.
 
-O projeto foi desenvolvido como parte de uma atividade acadêmica de **Sistemas Guiados por IA**, com foco em cibersegurança, análise comportamental, banco de dados e desenvolvimento de APIs.
+O projeto foi desenvolvido para a atividade de **Sistemas Guiados por IA**, com foco em cibersegurança, análise comportamental, banco de dados e desenvolvimento de APIs.
 
 > **Status:** MVP funcional  
 > **Versão:** 1.0.0
@@ -13,209 +13,180 @@ O projeto foi desenvolvido como parte de uma atividade acadêmica de **Sistemas 
 
 ## 🎯 Sobre o projeto
 
-Instituições de ensino podem possuir milhares de usuários acessando simultaneamente sistemas acadêmicos.
+Instituições de ensino utilizam sistemas acadêmicos que armazenam informações de alunos, professores e funcionários. A análise manual de muitos eventos de acesso pode dificultar a identificação de comportamentos suspeitos.
 
-Nesse cenário, ataques de phishing, roubo de credenciais e acessos indevidos podem passar despercebidos quando a análise depende exclusivamente de monitoramento manual.
-
-O SentinelAI foi desenvolvido para auxiliar nesse processo através da análise automática de características dos acessos.
-
-O sistema registra os eventos, calcula uma pontuação de risco, classifica o acesso e executa uma ação de segurança.
-
----
+O SentinelAI busca auxiliar esse processo por meio de uma análise automatizada das características de login. No MVP, o sistema registra eventos, calcula uma pontuação de risco, classifica o acesso e registra a decisão correspondente.
 
 ## 🚨 Problema
 
-O cenário analisado apresenta três desafios principais:
+O cenário abordado apresenta três desafios principais:
 
-- grande quantidade de acessos simultâneos;
-- dificuldade de monitoramento manual em escala;
-- necessidade de identificar rapidamente comportamentos suspeitos.
+- Grande quantidade de acessos aos sistemas acadêmicos.
+- Dificuldade de monitorar manualmente todos os eventos.
+- Necessidade de identificar e revisar rapidamente acessos potencialmente suspeitos.
 
-Um acesso realizado fora do horário habitual, por exemplo, utilizando um dispositivo desconhecido e originado de uma localização diferente do padrão do usuário, pode representar um risco maior.
+Um acesso fora do horário habitual, originado de um país diferente do padrão do usuário e realizado em um dispositivo desconhecido pode justificar uma análise mais cuidadosa. Esses sinais, isoladamente, não comprovam que houve um ataque.
 
----
+## 💡 Como funciona
 
-## 💡 Solução
-
-O SentinelAI utiliza características do acesso para calcular uma pontuação de risco.
-
-O fluxo principal é:
+O fluxo conceitual do MVP é:
 
 ```text
-LOGIN
-   ↓
-Coleta de informações
-   ↓
-Análise comportamental
-   ↓
-Pontuação de risco
-   ↓
-Classificação
-   ↓
-┌──────────┬──────────┬──────────┐
-│  BAIXO   │  MÉDIO   │   ALTO   │
-│          │          │          │
-│ PERMITIR │ ALERTAR  │ BLOQUEAR │
-└──────────┴──────────┴──────────┘
-   ↓
-Registro para auditoria
+Evento de login
+      ↓
+Coleta das características do acesso
+      ↓
+Análise baseada em regras
+      ↓
+Cálculo da pontuação de risco
+      ↓
+Classificação do risco
+      ↓
+Decisão registrada: PERMITIR, ALERTAR ou BLOQUEAR
+      ↓
+Registro para consulta e auditoria
 ```
+
+**Importante:** `BLOQUEAR` representa a decisão de segurança indicada ou registrada pelo MVP. Um bloqueio efetivo do login exige integração com o sistema de autenticação ou autorização da instituição.
 
 ---
 
-## 🧠 Análise de risco
+## 🧠 Motor de análise de risco
 
-O MVP atual utiliza um **motor de pontuação baseado em regras**.
+A versão atual utiliza um **motor de pontuação baseado em regras determinísticas**. Cada condição identificada adiciona pontos ao risco.
 
-Os fatores considerados são:
-
-| Fator | Pontuação |
+| Fator analisado | Pontuação adicionada |
 |---|---:|
 | Login fora do horário habitual | +25 |
-| País diferente do padrão | +35 |
+| País diferente do padrão do usuário | +35 |
 | Dispositivo não reconhecido | +20 |
 | IP não reconhecido | +20 |
 
+A pontuação máxima possível é de 100 pontos.
+
 ### Classificação
 
-| Pontuação | Nível | Ação |
+| Pontuação | Nível | Decisão associada |
 |---:|---|---|
-| 0–39 | 🟢 BAIXO | PERMITIR |
-| 40–69 | 🟡 MÉDIO | ALERTAR |
-| 70–100 | 🔴 ALTO | BLOQUEAR |
+| 0–39 | BAIXO | PERMITIR |
+| 40–69 | MÉDIO | ALERTAR |
+| 70–100 | ALTO | BLOQUEAR |
 
-### Exemplo
+Os limites e pesos são definidos no código. Eles são critérios iniciais do protótipo e precisam ser avaliados e ajustados com testes antes de qualquer uso operacional.
 
-Um acesso realizado:
+Um acesso fora do padrão pode ser legítimo, assim como uma pontuação baixa não garante que um acesso seja seguro.
 
-- às 03:15;
-- a partir da Alemanha;
-- utilizando dispositivo desconhecido;
-- utilizando IP desconhecido;
+### Exemplo de cálculo
 
-recebe:
+Considere um acesso às 03:15, originado da Alemanha, com dispositivo e IP não reconhecidos:
 
 ```text
-25 + 35 + 20 + 20 = 100 pontos
+Horário fora do padrão:       +25
+País diferente do padrão:     +35
+Dispositivo não reconhecido:  +20
+IP não reconhecido:           +20
+                              ---
+Pontuação total:              100
 ```
 
-Resultado:
+Resultado esperado:
 
 ```text
-RISCO: ALTO
-AÇÃO: BLOQUEAR
+Nível de risco: ALTO
+Decisão associada: BLOQUEAR
 ```
 
 ---
 
-## 🤖 Relação com IA
+## 🤖 Relação com Inteligência Artificial
 
-O projeto foi concebido dentro de um cenário de **defesa preditiva e análise comportamental**.
+O projeto foi desenvolvido no contexto acadêmico de **Sistemas Guiados por IA** e aborda análise comportamental e identificação de acessos potencialmente anômalos.
 
-Nesta versão acadêmica, o MVP utiliza regras determinísticas para representar o funcionamento inicial do sistema.
+**Limite da versão atual:** o motor do MVP utiliza regras determinísticas; ele não treina nem executa um modelo de Machine Learning. Portanto, não é correto afirmar que a versão atual aprende automaticamente com os acessos.
 
-A arquitetura foi preparada para uma evolução futura utilizando técnicas de:
+Como evolução futura, o sistema poderá ser ampliado com técnicas como:
 
-- Machine Learning;
-- detecção de anomalias;
-- aprendizado do comportamento individual;
-- análise estatística;
-- modelos de classificação;
-- identificação de padrões de acesso.
+- Machine Learning para detecção de anomalias.
+- Criação e atualização de perfis comportamentais.
+- Análise estatística dos eventos.
+- Modelos de classificação treinados e avaliados com dados apropriados.
 
-Portanto, o MVP atual **não afirma utilizar Machine Learning em produção**. Ele representa a primeira etapa de um sistema que pode evoluir para modelos de IA.
+Essas possibilidades são propostas de evolução, não funcionalidades que esta versão afirma já possuir.
 
 ---
 
 ## 🏗️ Arquitetura
 
-O projeto utiliza uma arquitetura modular:
+O projeto está organizado em componentes separados:
 
 ```text
-                 ┌─────────────────────┐
-                 │      Streamlit      │
-                 │     Frontend        │
-                 └──────────┬──────────┘
-                            │
-                            │ HTTP / REST
+┌──────────────────────────┐
+│ Streamlit                │
+│ Interface / Dashboard    │
+└────────────┬─────────────┘
+             │ HTTP / REST
+             ▼
+┌──────────────────────────┐
+│ FastAPI                  │
+│ API / Backend            │
+└────────────┬─────────────┘
+             │
+     ┌───────┼─────────┐
+     ▼       ▼         ▼
+┌────────┐ ┌────────┐ ┌────────────┐
+│ Análise│ │ Ações  │ │ Repositório│
+│ de risco│ │segurança│ │ de dados   │
+└────────┘ └────────┘ └─────┬──────┘
                             ▼
-                 ┌─────────────────────┐
-                 │       FastAPI       │
-                 │       Backend       │
-                 └──────────┬──────────┘
-                            │
-             ┌──────────────┼──────────────┐
-             │              │              │
-             ▼              ▼              ▼
-      ┌────────────┐ ┌────────────┐ ┌────────────┐
-      │  Risk      │ │ Security   │ │Repository  │
-      │  Analysis  │ │   Engine   │ │   Layer    │
-      └────────────┘ └────────────┘ └─────┬──────┘
-                                          │
-                                          ▼
-                                  ┌──────────────┐
-                                  │    SQLite    │
-                                  └──────────────┘
+                      ┌──────────┐
+                      │ SQLite   │
+                      └──────────┘
 ```
+
+- **Streamlit:** interface visual e páginas de acompanhamento.
+- **FastAPI:** disponibiliza os endpoints da API.
+- **Uvicorn:** servidor utilizado para executar a aplicação FastAPI.
+- **Motor de risco:** calcula a pontuação e classifica o evento conforme as regras definidas.
+- **Camada de segurança:** associa a classificação à decisão de segurança prevista no sistema.
+- **Camada de repositórios:** organiza o acesso aos dados.
+- **SQLite:** banco de dados utilizado no MVP.
+
+O diagrama representa a organização lógica do projeto. O fluxo exato de cada operação depende da implementação dos respectivos módulos.
 
 ---
 
 ## 🗄️ Banco de dados
 
-O SentinelAI utiliza SQLite no MVP.
+O MVP utiliza **SQLite** para armazenar os dados localmente.
 
-Principais entidades:
+### Entidades e relacionamentos
 
 ```text
-USUARIO
+USUARIO 1 ───── N DISPOSITIVO
    │
-   ├──────────< DISPOSITIVO
+   ├─────────── N ACESSO
    │
-   ├──────────< ACESSO
-   │
-   └──────────< REGRA_COMPORTAMENTAL
+   └─────────── N REGRA_COMPORTAMENTAL
 
-ACESSO
-   │
-   └────────── ANALISE_RISCO
-                    │
-                    └──────────< ACAO_SEGURANCA
+DISPOSITIVO 1 ─ N ACESSO
+
+ACESSO 1 ─────── 1 ANALISE_RISCO
+
+ANALISE_RISCO 1 ─ N ACAO_SEGURANCA
 ```
 
-### Entidades
+### Entidades principais
 
-#### USUARIO
+| Entidade | Finalidade |
+|---|---|
+| `USUARIO` | Armazena os dados dos usuários. |
+| `DISPOSITIVO` | Registra dispositivos associados aos usuários. |
+| `ACESSO` | Registra eventos de login. |
+| `REGRA_COMPORTAMENTAL` | Armazena referências do comportamento esperado. |
+| `ANALISE_RISCO` | Guarda a pontuação, o nível e os motivos da análise. |
+| `ACAO_SEGURANCA` | Registra a decisão ou ação associada à análise. |
 
-Armazena os usuários do sistema.
-
-Principais campos:
-
-- `id_usuario`
-- `nome`
-- `email`
-- `tipo_usuario`
-- `status`
-- `data_cadastro`
-
-#### DISPOSITIVO
-
-Armazena dispositivos associados aos usuários.
-
-#### ACESSO
-
-Registra os eventos de login.
-
-#### REGRA_COMPORTAMENTAL
-
-Representa o comportamento esperado do usuário.
-
-#### ANALISE_RISCO
-
-Armazena a pontuação e classificação do risco.
-
-#### ACAO_SEGURANCA
-
-Registra a decisão tomada pelo sistema.
+As chaves primárias identificam registros, enquanto as chaves estrangeiras relacionam registros entre tabelas. As cardinalidades indicadas representam o modelo lógico esperado; as restrições efetivamente garantidas dependem das definições no banco de dados e das validações da aplicação.
 
 ---
 
@@ -225,38 +196,25 @@ O frontend foi desenvolvido utilizando Streamlit.
 
 ### Dashboard
 
-Apresenta:
-
-- quantidade de acessos;
-- quantidade de alertas;
-- bloqueios;
-- eventos de alto risco;
-- distribuição dos níveis de risco;
-- últimos acessos;
-- status dos componentes.
+A página reúne indicadores e informações resumidas, como quantidade de acessos, alertas, eventos de risco e últimos registros, conforme os dados disponíveis na API.
 
 ### Monitoramento
 
-Permite acompanhar eventos de segurança em tempo real através dos dados registrados pela API.
+Apresenta informações dos eventos registrados, como:
 
-A tela apresenta:
+- Nível de risco.
+- Pontuação.
+- IP de origem.
+- Localização.
+- Data e hora.
+- Decisão associada.
+- Motivos identificados.
 
-- nível de risco;
-- pontuação;
-- IP;
-- localização;
-- data e hora;
-- ação executada;
-- motivos da detecção.
-
-Também é possível filtrar os eventos por nível de risco.
+A atualização dos dados depende do mecanismo de consulta e atualização implementado na interface. Por isso, esta documentação não presume atualização contínua em tempo real.
 
 ### Auditoria
 
-Apresenta o histórico dos eventos e permite consultar os registros por:
-
-- nível de risco;
-- ação executada.
+Permite consultar registros históricos e filtrar eventos por critérios disponibilizados pela interface, como nível de risco ou decisão associada.
 
 ---
 
@@ -266,23 +224,22 @@ Apresenta o histórico dos eventos e permite consultar os registros por:
 
 - Python
 - FastAPI
+- Uvicorn
 - Pydantic
 - SQLite
 
 ### Frontend
 
 - Streamlit
+- Requests
 - Pandas
 
-### Testes
+### Testes e desenvolvimento
 
 - Pytest
-
-### Desenvolvimento
-
 - Git
 - GitHub
-- REST API
+- API HTTP/REST
 
 ---
 
@@ -290,7 +247,6 @@ Apresenta o histórico dos eventos e permite consultar os registros por:
 
 ```text
 sentinel-ai/
-│
 ├── app/
 │   ├── __init__.py
 │   ├── main.py
@@ -300,33 +256,26 @@ sentinel-ai/
 │   ├── repositories.py
 │   ├── risk_analysis.py
 │   └── security.py
-│
 ├── database/
 │   └── schema.sql
-│
 ├── frontend/
 │   ├── __init__.py
 │   ├── app.py
-│   │
 │   ├── components/
 │   │   ├── __init__.py
 │   │   ├── sidebar.py
 │   │   ├── cards.py
 │   │   └── tables.py
-│   │
 │   └── views/
 │       ├── __init__.py
 │       ├── dashboard.py
 │       ├── monitoramento.py
 │       └── auditoria.py
-│
 ├── scripts/
 │   └── seed_demo.py
-│
 ├── tests/
 │   ├── test_database.py
 │   └── test_risk.py
-│
 ├── .gitignore
 ├── README.md
 └── requirements.txt
@@ -334,39 +283,35 @@ sentinel-ai/
 
 ---
 
-# 🚀 Instalação
+## 🚀 Instalação
 
-## 1. Clonar o repositório
+### 1. Clonar o repositório
+
+Substitua `<URL_DO_REPOSITORIO>` pela URL real do repositório:
 
 ```bash
 git clone <URL_DO_REPOSITORIO>
-```
-
-Entrar na pasta:
-
-```bash
 cd sentinel-ai
 ```
 
----
+### 2. Criar e ativar o ambiente virtual
 
-## 2. Criar ambiente virtual
-
-### Windows
+**Windows — PowerShell:**
 
 ```powershell
 python -m venv venv
-```
-
-Ativar:
-
-```powershell
 .\venv\Scripts\Activate.ps1
 ```
 
----
+Se o PowerShell impedir a execução do script de ativação, consulte as configurações de execução do Python/PowerShell do seu ambiente. Como alternativa, no Prompt de Comando (CMD), use:
 
-## 3. Instalar dependências
+```bat
+venv\Scripts\activate.bat
+```
+
+### 3. Instalar as dependências
+
+Com o ambiente virtual ativado:
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -374,33 +319,26 @@ python -m pip install -r requirements.txt
 
 ---
 
-# ▶️ Execução
+## ▶️ Executar o projeto
 
-## Backend
+Abra dois terminais na pasta do projeto e ative o ambiente virtual em ambos.
 
-Execute:
+### Backend
+
+No primeiro terminal:
 
 ```powershell
 python -m uvicorn app.main:app --reload
 ```
 
-A API ficará disponível em:
+A API ficará disponível localmente em:
 
-```text
-http://127.0.0.1:8000
-```
+- **API:** `http://127.0.0.1:8000`
+- **Documentação interativa (Swagger):** `http://127.0.0.1:8000/docs`
 
-A documentação interativa da API pode ser acessada através do Swagger:
+### Frontend
 
-```text
-http://127.0.0.1:8000/docs
-```
-
----
-
-## Frontend
-
-Em outro terminal, com o ambiente virtual ativado:
+No segundo terminal:
 
 ```powershell
 python -m streamlit run frontend/app.py
@@ -408,25 +346,21 @@ python -m streamlit run frontend/app.py
 
 A interface ficará disponível em:
 
-```text
-http://localhost:8501
-```
+`http://localhost:8501`
 
 ---
 
-# 🎭 Dados de demonstração
+## 🎭 Dados de demonstração
 
-O projeto possui um script para gerar dados demonstrativos através da própria API.
-
-Com o backend em execução:
+Com o backend em execução, rode o script de demonstração em outro terminal, com o ambiente virtual ativado:
 
 ```powershell
 python scripts/seed_demo.py
 ```
 
-O script cria cenários de diferentes níveis de risco.
+O script foi criado para enviar cenários demonstrativos à API. Os resultados abaixo ilustram o comportamento esperado das regras descritas; confirme-os executando o projeto.
 
-### Cenário 1 — Acesso normal
+### Cenário 1 — Acesso dentro do padrão
 
 ```text
 Usuário: João
@@ -435,9 +369,9 @@ Horário: 10:30
 IP conhecido: sim
 Dispositivo conhecido: sim
 
-Risco: BAIXO
-Pontuação: 0
-Ação: PERMITIR
+Risco esperado: BAIXO
+Pontuação esperada: 0
+Decisão associada: PERMITIR
 ```
 
 ### Cenário 2 — Acesso suspeito
@@ -449,9 +383,9 @@ Horário: 23:45
 IP conhecido: não
 Dispositivo conhecido: sim
 
-Risco: MÉDIO
-Pontuação: 45
-Ação: ALERTAR
+Risco esperado: MÉDIO
+Pontuação esperada: 45
+Decisão associada: ALERTAR
 ```
 
 ### Cenário 3 — Acesso de alto risco
@@ -463,80 +397,80 @@ Horário: 03:15
 IP conhecido: não
 Dispositivo conhecido: não
 
-Risco: ALTO
-Pontuação: 100
-Ação: BLOQUEAR
+Risco esperado: ALTO
+Pontuação esperada: 100
+Decisão associada: BLOQUEAR
 ```
 
 ---
 
-# 🧪 Testes
+## 🧪 Testes
 
-Os testes automatizados podem ser executados com:
+Para executar os testes automatizados:
 
 ```powershell
 python -m pytest
 ```
 
-Os testes verificam principalmente o funcionamento do motor de análise de risco e componentes do sistema.
+Os testes existentes podem verificar comportamentos do motor de risco e do banco de dados. A cobertura real depende dos casos implementados nos arquivos da pasta `tests/`.
 
 ---
 
-# 🔐 Segurança
+## 🔐 Segurança e limitações
 
-O projeto foi desenvolvido com foco em **detecção e resposta a acessos suspeitos**.
+O SentinelAI é um **protótipo acadêmico**, não uma solução pronta para proteger sistemas em produção.
 
-Entre os mecanismos implementados estão:
+O MVP contempla análise baseada em regras, classificação de risco e registro de eventos e decisões. Antes de uma utilização real, seriam necessários, entre outros pontos:
 
-- validação dos dados recebidos pela API;
-- classificação de risco;
-- registro de eventos;
-- rastreabilidade das decisões;
-- separação entre análise e ação de segurança;
-- armazenamento estruturado dos eventos.
+- Integração validada com o sistema de autenticação para aplicar bloqueios efetivos.
+- Testes de segurança e desempenho.
+- Autenticação e autorização da própria API.
+- Proteção de credenciais e dados sensíveis.
+- Validação dos pesos e limites com dados representativos.
+- Monitoramento, tratamento de falhas e auditoria operacional.
 
-O SentinelAI é um projeto acadêmico e não deve ser utilizado como mecanismo de segurança de produção sem validações, testes e controles adicionais.
-
----
-
-# 🔮 Evolução futura
-
-A arquitetura permite evoluções como:
-
-- Machine Learning para detecção de anomalias;
-- criação automática do perfil comportamental individual;
-- análise de localização geográfica;
-- análise de velocidade de deslocamento;
-- identificação de múltiplos dispositivos;
-- autenticação multifator;
-- integração com sistemas de identidade;
-- notificações automáticas;
-- integração com SIEM;
-- dashboards mais avançados;
-- geração de relatórios;
-- banco de dados PostgreSQL;
-- execução em ambiente cloud;
-- monitoramento contínuo.
+A pontuação indica o grau de risco segundo as regras atuais; não confirma, por si só, que um acesso é malicioso.
 
 ---
 
-# 👥 Equipe
+## 🔮 Evolução futura
+
+Possíveis melhorias incluem:
+
+- Machine Learning para detecção de anomalias.
+- Criação e atualização de perfis comportamentais.
+- Análise geográfica e de padrões de deslocamento.
+- Integração com autenticação multifator.
+- Integração com sistemas de identidade.
+- Notificações automáticas.
+- Integração com SIEM.
+- Relatórios e dashboards mais avançados.
+- Migração do SQLite para PostgreSQL.
+- Implantação em ambiente cloud.
+- Monitoramento contínuo.
+
+Esses itens representam possibilidades de evolução e não devem ser interpretados como funcionalidades já entregues no MVP.
+
+---
+
+## 👥 Equipe
 
 Projeto desenvolvido pela equipe **Cibersegurança Acadêmica**.
 
-### Responsabilidades técnicas
+### Áreas de trabalho
 
-- Modelagem de dados / DER
-- Desenvolvimento do backend
-- Desenvolvimento do frontend
-- Motor de análise de risco
-- Testes
-- Integração entre API e interface
-- Documentação
-- Versionamento com Git/GitHub
+- Modelagem de dados e DER.
+- Desenvolvimento do backend e da API.
+- Desenvolvimento da interface.
+- Motor de análise de risco.
+- Testes.
+- Integração entre API e interface.
+- Documentação.
+- Versionamento com Git/GitHub.
 
 ---
 
-# 📄 Licença
+## 📄 Licença
 
-Projeto desenvolvido para fins acadêmicos e educacionais.
+Projeto desenvolvido para fins acadêmicos e educacionais. Nenhuma licença de software específica é declarada nesta documentação.
+
